@@ -1,25 +1,24 @@
 from setuptools import setup, find_packages
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 install_requires = [
-    'netifaces==0.11.0',
     'pyserial',
     'paho-mqtt'
 ]
 
 setup(
-    name="vmilog-py",
+    name="vmipy",
     version=VERSION,
-    description="log library for vmilabs",
+    description="SDK for vmilabs",
     long_description=open("README.md").read(),
     long_description_content_type='text/markdown',
     author="vmilabs",
     author_email="zeekzhou@163.com",
     license="Apache-2.0",
-    url="https://github.com/openvmi/vmilog-py",
+    url="https://github.com/openvmi/vmipy",
     python_requires='>=3.6',
-    keywords="vmilabs log sdk",
+    keywords="vmilabs python SDK",
     install_requires=install_requires,
     packages=find_packages('src'),
     package_dir={'': 'src'},
