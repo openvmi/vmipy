@@ -14,12 +14,15 @@ class MqttChannel:
         self._onDisConnectCB = None
         self._onMessageCB = None
         self._client = None
+        self._connectedClient = None
 
     def _onConnect(self, client, userdata, flags, rc):
+        self._connectedClient = client
         if self._onConnectCB is not None:
             self._onConnectCB(client, userdata, flags, rc)
 
     def _onDisconnect(self, client, userdata, rc):
+        self._connectedClient = None
         if self._onDisConnectCB is not None:
             self._onDisConnectCB(client, userdata, rc)
     @property
@@ -50,6 +53,18 @@ class MqttChannel:
         if self._onMessageCB is not None:
             self._onMessageCB(client, userdata, message)
 
+    def Publish(self,topic, payload, qos):
+        if self._connectedClient is not None:
+            self._connectedClient.publish(topic=topic, payload=payload,qos=qos)
+            return True
+        return False
+
+    def Subscribe(self, topic):
+        if self._connectedClient is not None:
+            self._connectedClient.subscribe(topic)
+            return True
+        return False
+        
     def Run(self):
         while True:
             self._client = mqtt.Client()
