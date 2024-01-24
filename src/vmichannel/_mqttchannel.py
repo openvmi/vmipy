@@ -64,6 +64,9 @@ class MqttChannel:
             self._connectedClient.subscribe(topic)
             return True
         return False
+
+    def GetChannelType(self):
+        return "mqtt"
         
     def Run(self):
         while True:

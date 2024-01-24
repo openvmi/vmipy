@@ -15,7 +15,6 @@ class WebSocketChannel:
 
 
     def _onConnect(self, ws):
-        #print("connected")
         self._connectedClient = ws
         if self._onConnectCB is not None:
             self._onConnectCB(ws)
@@ -76,6 +75,8 @@ class WebSocketChannel:
         #rel.signal(2, rel.abort)
         #rel.dispatch()
 
+    def GetChannelType(self):
+        return "websocket"
     
 if __name__ =="__main__":
     class Device:
