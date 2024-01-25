@@ -9,6 +9,23 @@ class UartChannel:
         self._serial = None
         self._lock = threading.Lock()
         setattr(self, 'queryValue', self._realQueryValue)
+    
+    def readLine(self):
+        with self._lock:
+            if self._serial is None or self._serial.is_open is False:
+                try:
+                    self._serial = serial.Serial(self._port, self._baudrate, timeout=self._timeout)
+                except:
+                    print("error in open serial")
+                    return None
+            try:
+                hasAtrr = getattr(self._serial, 'flushInput', None)
+                if hasAtrr is not None:
+                    self._serial.flushInput()
+                else:
+                    self._serial.reset_input_buffer()
+                data = self._serial.readLine()
+                return str(data, 'UTF-8')
 
     def endableMock(self):
         setattr(self, 'queryValue', self._mockQueryValue)
