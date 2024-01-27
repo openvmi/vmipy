@@ -24,9 +24,13 @@ class UartChannel:
                     self._serial.flushInput()
                 else:
                     self._serial.reset_input_buffer()
-                data = self._serial.readLine()
-                return str(data, 'UTF-8')
-
+                data = self._serial.readline()
+                return str(data, 'utf-8')
+            except serial.SerialTimeoutException:
+                return None
+            except:
+                return None
+            
     def endableMock(self):
         setattr(self, 'queryValue', self._mockQueryValue)
 
