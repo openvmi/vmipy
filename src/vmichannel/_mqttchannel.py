@@ -1,5 +1,4 @@
 import paho.mqtt.client as mqtt
-from vmiiputil import getIpV4
 import threading
 import json
 import time
@@ -127,6 +126,7 @@ class PingService:
         self._disconnectedEvent.set()
 
     def Run(self):
+        from vmiiputil import getIpV4
         if self._isRunCalled is True:
             return
         self._isRunCalled = True

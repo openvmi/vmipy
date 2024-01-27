@@ -5,6 +5,7 @@ VERSION = "1.2.0"
 install_requires = [
     'pyserial',
     'paho-mqtt'
+    'websocket-client',
 ]
 
 setup(

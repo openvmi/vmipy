@@ -19,11 +19,11 @@ class UartChannel:
                     print("error in open serial")
                     return None
             try:
-                hasAtrr = getattr(self._serial, 'flushInput', None)
-                if hasAtrr is not None:
-                    self._serial.flushInput()
-                else:
-                    self._serial.reset_input_buffer()
+                # hasAtrr = getattr(self._serial, 'flushInput', None)
+                # if hasAtrr is not None:
+                #     self._serial.flushInput()
+                # else:
+                #     self._serial.reset_input_buffer()
                 data = self._serial.readline()
                 return str(data, 'utf-8')
             except serial.SerialTimeoutException:
