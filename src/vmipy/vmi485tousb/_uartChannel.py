@@ -59,7 +59,21 @@ class UartChannel:
                 return None
             value = self._serial.read(responseLength)
             return value
-    
+            
+    def read(self, readLength):
+        with self._lock:
+            if self._serial is None or self._serial.is_open is False:
+                try:
+                    self._serial = serial.Serial(self._port, self._baudrate, timeout=self._timeout)
+                except serial.SerialException:
+                    print("error in open serial channel")
+                    return None
+                try:
+                    value = self._serial.read(readLength)
+                    return value
+                except:
+                    return None
+
     def _mockQueryValue(self, command, responseLength):
         ret = []
         for i in range(responseLength):
