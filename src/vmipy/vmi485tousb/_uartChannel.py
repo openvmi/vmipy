@@ -68,11 +68,11 @@ class UartChannel:
                 except serial.SerialException:
                     print("error in open serial channel")
                     return None
-                try:
-                    value = self._serial.read(readLength)
-                    return value
-                except:
-                    return None
+            try:
+                value = self._serial.read(readLength)
+                return value
+            except:
+                return None
 
     def _mockQueryValue(self, command, responseLength):
         ret = []
