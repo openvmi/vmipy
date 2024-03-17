@@ -111,13 +111,14 @@ class WSDevice:
         self._pingThread.daemon = True
         self._pingThread.start()
 
-        self._d2cThread = threading.Thread(target=self._wsChannel.Run, args=())
+        self._d2cThread = threading.Thread(target=self._wsChannel._sendD2cMsg, args=())
         self._d2cThread.daemon = True
         self._d2cThread.start()
 
         self._wsChannel.Run()
 
     
+
 
     
 
