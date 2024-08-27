@@ -6,7 +6,7 @@ SDK for openvmi org.
 
 ## Note
 
-To reduce the installation issue, please install the below dependency by maunal if necessary:
+To reduce the installation issue, please install the below dependency by maunal if need to use `ohand` or  `gforce` SDK:
 
 * bleak==0.20.2
 * bleak-winrt==1.2.0
