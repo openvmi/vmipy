@@ -9,6 +9,7 @@ class WebSocketChannel:
         self._onConnectCB = None
         self._onDisconnectCB = None
         self._onMessageCB = None
+        self._onErrorCB = None
         self._client = None
         self._connectedClient = None
 
@@ -28,8 +29,8 @@ class WebSocketChannel:
             self._onMessageCB(client, message)
 
     def _onError(self, ws, error):
-        #print(error)
-        pass
+        if self._onErrorCB is not None:
+            self._onErrorCB(ws, error)
 
     @property
     def on_connect(self):
@@ -43,6 +44,14 @@ class WebSocketChannel:
     def on_disconnect(self):
         return self._onDisconnectCB
 
+    @property
+    def on_error(self):
+        return self._onErrorCB
+    
+    @on_error.setter
+    def on_error(self, cb):
+        self._onErrorCB = cb
+        
     @on_disconnect.setter
     def on_disconnect(self, cb):
         self._onDisconnectCB = cb

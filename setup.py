@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = "24.8.27"
+VERSION = "25.9.17"
 
 install_requires = [
     'pyserial',

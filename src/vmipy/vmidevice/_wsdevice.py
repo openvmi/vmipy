@@ -3,6 +3,9 @@ import threading
 import queue
 import time
 import json
+from ._abstract import Device, DevicePingData, DeviceListener, TopicConfig
+from dataclasses import asdict
+from typing import List
 
 class DevicePingMessage:
     def __init__(self,
@@ -63,56 +66,73 @@ class WSDeviceProtocolGen:
             }
         }
     
-class WSDevice:
-    def __init__(self,serverIp, deviceType, deviceId):
+class WSDevice(Device):
+    def __init__(self,serverIp, deviceType, deviceId, listener: DeviceListener | None):
+        super().__init__(listener)
         self._deviceType = deviceType
         self._deviceId = deviceId
         self._serverIp = serverIp
-        self._wsUrl = "ws://{0}/ws/edge/iot?devicetype={1}&deviceid={2}".format(self._serverIp, self._deviceType, self._deviceId)
+        self._wsUrl = f"ws://{self._serverIp}/ws/edge/iot?devicetype={self._deviceType}&deviceid={self._deviceId}"
         self._wsChannel = WebSocketChannel(url=self._wsUrl)
         self._wsChannel.on_connect = self._onConnect
         self._wsChannel.on_disconnect = self._onDisconnected
-        self._d2cThread = None
-        self._pingThread = None
+        self._wsChannel.on_error = self._onError
         self._connectEvent = threading.Event()
         self._connectEvent.clear()
         self._queue = queue.Queue()
-        self._pingMsg = DevicePingMessage()
-    
+        self._is_running = True
+        self._d2cThread = threading.Thread(target=self._send_msg, args=(), daemon=True)
+        self._d2cThread.start()
+
+        self._channelThread = threading.Thread(target=self._wsChannel.Run, args=(), daemon=True)
+        self._channelThread.start()
+
+
     def _onConnect(self, ws):
         self._connectEvent.set()
+        if self._listener is not None:
+            self._listener.on_connect()
 
     def _onDisconnected(self, ws, close_code, close_msg):
         self._connectEvent.clear()
+        if self._listener is not None:
+            self._listener.on_disconnect()
 
-    def putD2cMessage(self, payload):
-        self._queue.put(payload)
+    def _onError(self, ws, error):
+        if self._listener is not None:
+            self._listener.on_error(error)
 
-    def _sendPing(self):
-        while True:
-            if self._connectEvent.is_set() is False:
-                time.sleep(3)
-                continue
-            pingMsg = WSDeviceProtocolGen.GenD2CPingMessage(self._deviceType, self._deviceId, self._pingMsg.toJson())
-            self._wsChannel.Send(json.dumps(pingMsg))
-            time.sleep(25)
-    
-    def _sendD2cMsg(self):
-        while True:
+    def _send_msg(self):
+        while self._is_running:
             _ret = self._queue.get()
             if _ret is None:
                 continue
-            propDta = WSDeviceProtocolGen.GenD2CMessage(self._deviceType, self._deviceId, _ret)
-            self._wsChannel.Send(json.dumps(propDta))
-            
+            if self._connectEvent.is_set() is False:
+                continue
+            self._wsChannel.Send(json.dumps(_ret))
 
-    def RunForever(self):
-        self._pingThread = threading.Thread(target=self._sendPing, args=())
-        self._pingThread.daemon = True
-        self._pingThread.start()
+    def send_d2c_message(self, payload):
+        msg = WSDeviceProtocolGen.GenD2CMessage(
+            self._deviceType,
+            self._deviceId,
+            payload=payload
+        )
+        self._queue.put(msg)
 
-        self._d2cThread = threading.Thread(target=self._sendD2cMsg, args=())
-        self._d2cThread.daemon = True
-        self._d2cThread.start()
+    def send_ping_message(self, ping_msg: DevicePingData):
+        msg = WSDeviceProtocolGen.GenD2CPingMessage(
+            self._deviceType,
+            self._deviceId,
+            asdict(ping_msg)
+        )
+        self._queue.put(msg)
 
-        self._wsChannel.Run()
+    def subscribe(self, topic:TopicConfig):
+        raise NotImplementedError("subscribe method not supported yet")
+        
+    def destory(self):
+        self._is_running = False
+        self._queue.put(None)
+        if self._d2cThread is not None and self._d2cThread.is_alive():
+            self._d2cThread.join(timeout=2)
+        
